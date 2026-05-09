@@ -1,82 +1,102 @@
 -- =============================================
--- SLIME RNG POWER SCRIPT 2026
--- Load via GitHub - Keyless
+-- SLIME RNG GUI SCRIPT 2026
+-- Dengan Kavo UI - Mudah Dipakai
 -- =============================================
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local HttpService = game:GetService("HttpService")
 local Workspace = game:GetService("Workspace")
 
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 
-print("🚀 Slime RNG Power Script Loading...")
+print("🚀 Loading Slime RNG GUI...")
 
--- Settings
+-- Load Kavo UI Library
+local Kavo = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+
+local Window = Kavo:CreateLib("Slime RNG GUI", "Ocean")
+
+-- Tabs
+local Main = Window:NewTab("Main")
+local Farm = Window:NewTab("Auto Farm")
+local Visual = Window:NewTab("Visual")
+local Misc = Window:NewTab("Misc")
+
+-- Settings Table
 local Settings = {
     AutoRoll = false,
-    RollDelay = 0.15,
-    AutoFarm = false,
-    AutoCollect = true,
-    WalkSpeed = 100,
-    JumpPower = 100,
+    WalkSpeed = 120,
+    JumpPower = 120,
     Fly = false,
 }
 
--- Simple Fly Function
-local flySpeed = 50
-local bodyVelocity, bodyGyro
+-- ==================== MAIN TAB ====================
+local MainSection = Main:NewSection("Auto Roll")
 
-local function toggleFly()
-    Settings.Fly = not Settings.Fly
-    if Settings.Fly then
-        local root = character:FindFirstChild("HumanoidRootPart")
-        if root then
-            bodyVelocity = Instance.new("BodyVelocity")
-            bodyGyro = Instance.new("BodyGyro")
-            bodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-            bodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
-            bodyVelocity.Parent = root
-            bodyGyro.Parent = root
-            print("Fly ON (WASD + Mouse)")
-        end
-    else
-        if bodyVelocity then bodyVelocity:Destroy() end
-        if bodyGyro then bodyGyro:Destroy() end
-        print("Fly OFF")
-    end
-end
+MainSection:NewToggle("Auto Roll", "Roll otomatis", function(state)
+    Settings.AutoRoll = state
+    print("Auto Roll:", state)
+end)
 
--- Main Loop
+MainSection:NewSlider("Roll Delay", "0.1 = Cepat", 10, 0.1, 2, function(value)
+    print("Delay diatur ke:", value)
+end)
+
+-- ==================== FARM TAB ====================
+local FarmSection = Farm:NewSection("Farming")
+
+FarmSection:NewToggle("Auto Farm Slime", "", function(state)
+    print("Auto Farm:", state)
+end)
+
+FarmSection:NewToggle("Auto Collect Drops", "", function(state)
+    print("Auto Collect:", state)
+end)
+
+-- ==================== VISUAL TAB ====================
+local VisualSection = Visual:NewSection("ESP & Visual")
+
+VisualSection:NewToggle("ESP Players", "", function(state)
+    print("ESP Players:", state)
+end)
+
+VisualSection:NewToggle("ESP Drops", "", function(state)
+    print("ESP Drops:", state)
+end)
+
+-- ==================== MISC TAB ====================
+local MiscSection = Misc:NewSection("Movement")
+
+MiscSection:NewToggle("Fly (Tekan F)", "Toggle Fly", function(state)
+    Settings.Fly = state
+    print("Fly:", state and "ON" or "OFF")
+end)
+
+MiscSection:NewSlider("WalkSpeed", "", 500, 16, 500, function(value)
+    Settings.WalkSpeed = value
+end)
+
+MiscSection:NewSlider("JumpPower", "", 300, 50, 300, function(value)
+    Settings.JumpPower = value
+end)
+
+-- ==================== FLY & WALKSPEED LOOP ====================
 RunService.Heartbeat:Connect(function()
-    if not character or not character:FindFirstChild("Humanoid") then return end
-    
-    character.Humanoid.WalkSpeed = Settings.WalkSpeed
-    character.Humanoid.JumpPower = Settings.JumpPower
-
-    -- Fly Control
-    if Settings.Fly and bodyVelocity and bodyGyro then
-        local cam = Workspace.CurrentCamera
-        local move = Vector3.new()
-        if UserInputService:IsKeyDown(Enum.KeyCode.W) then move += cam.CFrame.LookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.S) then move -= cam.CFrame.LookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.A) then move -= cam.CFrame.RightVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.D) then move += cam.CFrame.RightVector end
-        
-        bodyVelocity.Velocity = move.Unit * flySpeed
-        bodyGyro.CFrame = cam.CFrame
+    if character and character:FindFirstChild("Humanoid") then
+        character.Humanoid.WalkSpeed = Settings.WalkSpeed
+        character.Humanoid.JumpPower = Settings.JumpPower
     end
 end)
 
--- Toggle Fly dengan tombol F
-UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
+-- Fly Toggle dengan tombol F
+UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.F then
-        toggleFly()
+        Settings.Fly = not Settings.Fly
+        print("Fly toggled:", Settings.Fly)
     end
 end)
 
-print("✅ Script Loaded! Tekan F untuk Fly")
-print("Gunakan GUI atau tambahkan fitur sesuai kebutuhan")
+print("✅ GUI Slime RNG berhasil dimuat!")
+print("Tekan F untuk Fly")
